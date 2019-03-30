@@ -3,5 +3,11 @@
   "version": "0.0.0",
   "description": "",
   "author": "Kyle E. Mitchell <kyle@kemitchell.com> (https://kemitchell.com/)",
-  "repository": "kemitchell/keyserver-protocol.js"
+  "repository": "kemitchell/keyserver-protocol.js",
+  "devDependencies": {
+    "sodium-native": "^2.3.0"
+  },
+  "script": {
+    "test": "node test.js"
+  }
 }

@@ -1,9 +1,15 @@
 var assert = require('assert')
 
-var VERIFICATION_HASH = 'verificationHash'
-
 module.exports = function (primitives) {
   assert(typeof primitives === 'object')
+
+  // Encryption Key
+
+  var encryptionKeyLength = primitives.encryptionKeyLength
+  assert(Number.isInteger(encryptionKeyLength))
+  assert(encryptionKeyLength > 0)
+
+  // Cryptographic Primitives
 
   var clientStretch = primitives.clientStretch
   assert(typeof clientStretch === 'function')
@@ -12,7 +18,7 @@ module.exports = function (primitives) {
   assert(typeof serverStretch === 'function')
 
   var serverStretchSaltLength = primitives.serverStretchSaltLength
-  assert(typeof serverStretchSaltLength === 'number')
+  assert(Number.isInteger(serverStretchSaltLength))
   assert(serverStretchSaltLength > 0)
 
   var hkdf = primitives.hkdf
@@ -24,15 +30,48 @@ module.exports = function (primitives) {
   var random = primitives.random
   assert(typeof random === 'function')
 
-  var keyLength = primitives.unwrappedKeyLength
-  assert(typeof keyLength === 'number')
-  assert(keyLength > 0)
-
   var generateUserID = primitives.generateUserID
   assert(typeof generateUserID === 'function')
 
   var generateToken = primitives.generateToken
   assert(typeof generateToken === 'function')
+
+  // HKDF Parameters
+
+  var verificationHashSubkey = primitives.verificationHashSubkey
+  assert(Number.isInteger(verificationHashSubkey))
+  var verificationHashContext = primitives.verificationHashContext
+  assert(Buffer.isBuffer(verificationHashContext))
+
+  var authenticationTokenSubkey = primitives.authenticationTokenSubkey
+  assert(Number.isInteger(authenticationTokenSubkey))
+  var authenticationTokenContext = primitives.authenticationTokenContext
+  assert(Buffer.isBuffer(authenticationTokenContext))
+
+  var clientKeySubkey = primitives.clientKeySubkey
+  assert(Number.isInteger(clientKeySubkey))
+  var clientKeyContext = primitives.clientKeyContext
+  assert(Buffer.isBuffer(clientKeyContext))
+
+  var serverKeySubkey = primitives.serverKeySubkey
+  assert(Number.isInteger(serverKeySubkey))
+  var serverKeyContext = primitives.serverKeyContext
+  assert(Buffer.isBuffer(serverKeyContext))
+
+  var fromKeyAccessTokenSubkey = primitives.fromKeyAccessTokenSubkey
+  assert(Number.isInteger(fromKeyAccessTokenSubkey))
+  var fromKeyAccessTokenContext = primitives.fromKeyAccessTokenContext
+  assert(Buffer.isBuffer(fromKeyAccessTokenContext))
+
+  var fromKeyRequestTokenSubkey = primitives.fromKeyRequestTokenSubkey
+  assert(Number.isInteger(fromKeyRequestTokenSubkey))
+  var fromKeyRequestTokenContext = primitives.fromKeyRequestTokenContext
+  assert(Buffer.isBuffer(fromKeyRequestTokenContext))
+
+  var tokenIDSubkey = primitives.tokenIDSubkey
+  assert(Number.isInteger(tokenIDSubkey))
+  var tokenIDContext = primitives.tokenIDContext
+  assert(Buffer.isBuffer(tokenIDContext))
 
   return {
     client: {
@@ -52,40 +91,38 @@ module.exports = function (primitives) {
     var password = input.password
     assert(typeof password === 'string')
     assert(password.length > 0)
+    var passwordBuffer = Buffer.from(password)
 
     var email = input.email
     assert(typeof email === 'string')
     assert(email.length > 0)
     assert(email.indexOf('@') > 1)
+    var emailBuffer = Buffer.from(email)
 
     var clientStretchedPassword = clientStretch({
-      password, salt: email
+      password: passwordBuffer, salt: emailBuffer
     })
     var authenticationToken = hkdf({
-      input: clientStretchedPassword,
-      info: 'authenticationToken'
+      key: clientStretchedPassword,
+      subkey: authenticationTokenSubkey,
+      context: authenticationTokenContext
     })
 
     return {
-      clientStretchedPassword,
-      authenticationToken
+      authenticationToken,
+      clientStretchedPassword
     }
   }
 
   function serverRegister (input) {
     assert(typeof input === 'object')
 
-    var email = input.email
-    assert(typeof email === 'string')
-    assert(email.length > 0)
-    assert(email.indexOf('@') > 1)
-
     var clientStretchedPassword = input.clientStretchedPassword
-    assert(clientStretchedPassword instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(clientStretchedPassword))
     assert(clientStretchedPassword.byteLength > 0)
 
     var authenticationToken = input.authenticationToken
-    assert(authenticationToken instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(authenticationToken))
     assert(authenticationToken.byteLength > 0)
 
     var authenticationSalt = random(serverStretchSaltLength)
@@ -94,19 +131,19 @@ module.exports = function (primitives) {
       salt: authenticationSalt
     })
     var verificationHash = hkdf({
-      input: serverStretchedPassword,
-      salt: new ArrayBuffer(0),
-      info: VERIFICATION_HASH
+      key: serverStretchedPassword,
+      subkey: verificationHashSubkey,
+      context: verificationHashContext
     })
-    var serverWrappedKey = random(keyLength)
+    var serverWrappedKey = random(encryptionKeyLength)
     var userID = generateUserID()
 
     return {
       authenticationSalt,
-      email,
       userID,
       serverWrappedKey,
       verificationHash,
+      serverStretchedPassword,
       sessionToken: generateToken(),
       keyAccessToken: generateToken()
     }
@@ -116,11 +153,11 @@ module.exports = function (primitives) {
     assert(typeof input === 'object')
 
     var authenticationToken = input.authenticationToken
-    assert(authenticationToken instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(authenticationToken))
     assert(authenticationToken.byteLength > 0)
 
     var authenticationSalt = input.authenticationSalt
-    assert(authenticationSalt instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(authenticationSalt))
     assert(authenticationSalt.byteLength > 0)
 
     var serverStretchedPassword = serverStretch({
@@ -131,18 +168,18 @@ module.exports = function (primitives) {
     var storedVerificationHash = input.verificationHash
 
     var computedVerificationHash = hkdf({
-      input: serverStretchedPassword,
-      salt: new ArrayBuffer(0),
-      info: VERIFICATION_HASH
+      key: serverStretchedPassword,
+      subkey: verificationHashContext,
+      context: verificationHashContext
     })
 
-    if (!equal(storedVerificationHash, computedVerificationHash)) {
+    if (!storedVerificationHash.equals(computedVerificationHash)) {
       return false
     }
 
     return {
-      sessionToken: generateToken(),
-      keyAccessToken: generateToken()
+      keyAccessToken: generateToken(),
+      sessionToken: generateToken()
     }
   }
 
@@ -150,20 +187,21 @@ module.exports = function (primitives) {
     assert(typeof input === 'object')
 
     var serverStretchedPassword = input.serverStretchedPassword
-    assert(serverStretchedPassword instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(serverStretchedPassword))
     assert(serverStretchedPassword.byteLength > 0)
 
     var serverWrappedKey = input.serverWrappedKey
-    assert(serverWrappedKey instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(serverWrappedKey))
     assert(serverWrappedKey.byteLength > 0)
 
     var keyAccessToken = input.keyAccessToken
-    assert(keyAccessToken instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(keyAccessToken))
     assert(keyAccessToken.byteLength > 0)
 
     var serverKey = hkdf({
-      input: serverStretchedPassword,
-      info: 'serverKey'
+      key: serverStretchedPassword,
+      subkey: serverKeySubkey,
+      context: serverKeyContext
     })
     var clientWrappedKey = xor(serverKey, serverWrappedKey)
 
@@ -179,14 +217,14 @@ module.exports = function (primitives) {
     var ciphertext = xor(clientWrappedKey, responseEncryptionKey)
     var mac = hmac({
       key: responseAuthenticationKey,
-      ciphertext
+      input: ciphertext
     })
 
     return {
-      tokenID,
       ciphertext,
       mac,
-      requestAuthenticationKey
+      requestAuthenticationKey,
+      tokenID
     }
   }
 
@@ -194,16 +232,16 @@ module.exports = function (primitives) {
     assert(typeof input === 'object')
 
     var ciphertext = input.ciphertext
-    assert(ciphertext instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(ciphertext))
 
     var providedMAC = input.mac
-    assert(ciphertext instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(providedMAC))
 
     var clientStretchedPassword = input.clientStretchedPassword
-    assert(ciphertext instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(clientStretchedPassword))
 
     var keyAccessToken = input.keyAccessToken
-    assert(keyAccessToken instanceof ArrayBuffer)
+    assert(Buffer.isBuffer(keyAccessToken))
 
     var fromKeyAccessToken = deriveFromKeyAccessToken(keyAccessToken)
     // var tokenID = fromKeyAccessToken.tokenID
@@ -216,75 +254,67 @@ module.exports = function (primitives) {
 
     var computedMAC = hmac({
       key: responseAuthenticationKey,
-      ciphertext
+      input: ciphertext
     })
 
-    if (!equal(providedMAC, computedMAC)) return false
+    if (!providedMAC.equals(computedMAC)) return false
 
     var clientWrappedKey = xor(ciphertext, responseEncryptionKey)
 
     var clientKey = hkdf({
-      input: clientStretchedPassword,
-      salt: new ArrayBuffer(0),
-      info: 'clientKey',
-      length: 32
+      key: clientStretchedPassword,
+      subkey: clientKeySubkey,
+      context: clientKeyContext
     })
 
-    var key = xor(clientWrappedKey, clientKey)
+    var encryptionKey = xor(clientWrappedKey, clientKey)
 
-    return key
+    return {
+      encryptionKey
+    }
   }
 
   function deriveFromKeyAccessToken (keyAccessToken) {
-    var buffer = hkdf({
-      input: keyAccessToken,
-      salt: new ArrayBuffer(0),
-      info: 'fromKeyAccessToken',
-      length: 3 * 32
+    // TODO: Verify this is best for > crypto_kdf_BYTES_MAX.
+    var tokenID = hkdf({
+      key: keyAccessToken,
+      subkey: tokenIDSubkey,
+      context: tokenIDContext,
+      length: 32
     })
+    var buffer = hkdf({
+      key: keyAccessToken,
+      subkey: fromKeyAccessTokenSubkey,
+      context: fromKeyAccessTokenContext,
+      length: 2 * 32
+    })
+
     return {
-      tokenID: buffer.slice(0, 32),
-      requestAuthenticationKey: buffer.slice(32, 64),
-      keyRequestToken: buffer.slice(64, 96)
+      keyRequestToken: buffer.slice(32, 64),
+      requestAuthenticationKey: buffer.slice(0, 32),
+      tokenID
     }
   }
 
   function deriveFromKeyRequestToken (keyRequestToken) {
     var buffer = hkdf({
-      input: keyRequestToken,
-      salt: new ArrayBuffer(0),
-      info: 'fromKeyRequestToken',
+      key: keyRequestToken,
+      subkey: fromKeyRequestTokenSubkey,
+      context: fromKeyRequestTokenContext,
       length: 2 * 32
     })
+
     return {
-      requestAuthenticationKey: buffer.slice(0, 32),
+      responseAuthenticationKey: buffer.slice(0, 32),
       responseEncryptionKey: buffer.slice(32, 65)
     }
   }
 }
 
-function equal (a, b) {
-  if (a.byteLength !== b.byteLength) return false
-  var aView = DataView(a)
-  var bView = DataView(b)
-  for (var offset = 0; offset < aView.byteLength; offset++) {
-    if (aView.getUint8(offset) !== bView.getUint8(offset)) {
-      return false
-    }
-  }
-  return true
-}
-
 function xor (a, b) {
-  var aView = DataView(a)
-  var bView = DataView(b)
-  var returned = new ArrayBuffer(a.byteLength)
-  var returnedView = DataView(returned)
-  for (var offset = 0; offset < aView.byteLength; offset++) {
-    returnedView.setUint8(
-      offset,
-      aView.getUint8(offset) ^ bView.getUint8(offset)
-    )
+  var returned = Buffer.alloc(a.length)
+  for (var offset = 0; offset < a.length; offset++) {
+    returned[offset] = a[offset] ^ b[offset]
   }
   return returned
 }
