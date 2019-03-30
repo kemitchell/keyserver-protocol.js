@@ -266,7 +266,7 @@ module.exports = function (configuration) {
 
     return {
       responseAuthenticationKey: buffer.slice(0, 32),
-      responseEncryptionKey: buffer.slice(32, 65)
+      responseEncryptionKey: buffer.slice(32, 64)
     }
   }
 }
