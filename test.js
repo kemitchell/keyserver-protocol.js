@@ -2,8 +2,6 @@ var assert = require('assert')
 var sodium = require('sodium-native')
 
 var protocol = require('./')({
-  encryptionKeyLength: 32,
-
   clientStretch: function (options) {
     var password = options.password
     var salt = options.salt

@@ -3,12 +3,6 @@ var assert = require('assert')
 module.exports = function (primitives) {
   assert(typeof primitives === 'object')
 
-  // Encryption Key
-
-  var encryptionKeyLength = primitives.encryptionKeyLength
-  assert(Number.isInteger(encryptionKeyLength))
-  assert(encryptionKeyLength > 0)
-
   // Cryptographic Primitives
 
   var clientStretch = primitives.clientStretch
@@ -115,7 +109,7 @@ module.exports = function (primitives) {
     var parameters = { key: serverStretchedPassword }
     Object.assign(parameters, verificationHashParameters)
     var verificationHash = deriveKey(parameters)
-    var serverWrappedKey = random(encryptionKeyLength)
+    var serverWrappedKey = random(32)
     var userID = generateUserID()
 
     return {
