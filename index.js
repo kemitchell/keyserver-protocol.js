@@ -86,7 +86,8 @@ module.exports = function (primitives) {
     var emailBuffer = Buffer.from(email, 'utf8')
 
     var clientStretchedPassword = clientStretch({
-      password: passwordBuffer, salt: emailBuffer
+      password: passwordBuffer,
+      salt: emailBuffer
     })
     var parameters = { key: clientStretchedPassword }
     Object.assign(parameters, authenticationTokenParameters)
@@ -245,9 +246,7 @@ module.exports = function (primitives) {
 
     var encryptionKey = xor(clientWrappedKey, clientKey)
 
-    return {
-      encryptionKey
-    }
+    return { encryptionKey }
   }
 
   function deriveFromKeyAccessToken (keyAccessToken) {
