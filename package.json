@@ -1,7 +1,7 @@
 {
   "name": "keyserver-protocol",
   "version": "0.0.0",
-  "description": "",
+  "description": "e-mail-authenticated keyserver protocol inspired by Mozilla's onepw",
   "author": "Kyle E. Mitchell <kyle@kemitchell.com> (https://kemitchell.com/)",
   "repository": "kemitchell/keyserver-protocol.js",
   "devDependencies": {
