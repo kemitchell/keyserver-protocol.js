@@ -117,17 +117,17 @@ var serverRegister = protocol.server.register({
 })
 
 assert(serverRegister.hasOwnProperty('authenticationSalt'))
-assert(serverRegister.hasOwnProperty('keyAccessToken'))
 assert(serverRegister.hasOwnProperty('serverStretchedPassword'))
 assert(serverRegister.hasOwnProperty('serverWrappedKey'))
-assert(serverRegister.hasOwnProperty('sessionToken'))
 assert(serverRegister.hasOwnProperty('userID'))
 assert(serverRegister.hasOwnProperty('verificationHash'))
+
+var keyAccessToken = random(32)
 
 var serverRequest = protocol.server.request({
   serverStretchedPassword: serverRegister.serverStretchedPassword,
   serverWrappedKey: serverRegister.serverWrappedKey,
-  keyAccessToken: serverRegister.keyAccessToken
+  keyAccessToken
 })
 
 assert(serverRequest.hasOwnProperty('tokenID'))
@@ -139,7 +139,7 @@ var clientRequest = protocol.client.request({
   ciphertext: serverRequest.ciphertext,
   mac: serverRequest.mac,
   clientStretchedPassword: clientLogin.clientStretchedPassword,
-  keyAccessToken: serverRegister.keyAccessToken
+  keyAccessToken
 })
 
 assert(clientRequest.hasOwnProperty('encryptionKey'))

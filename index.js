@@ -33,9 +33,6 @@ module.exports = function (primitives) {
   var generateUserID = primitives.generateUserID
   assert(typeof generateUserID === 'function')
 
-  var generateToken = primitives.generateToken
-  assert(typeof generateToken === 'function')
-
   // Key Derivation Parameters
 
   var verificationHashParameters = primitives.verificationHash
@@ -126,9 +123,7 @@ module.exports = function (primitives) {
       userID,
       serverWrappedKey,
       verificationHash,
-      serverStretchedPassword,
-      sessionToken: generateToken(),
-      keyAccessToken: generateToken()
+      serverStretchedPassword
     }
   }
 
@@ -158,10 +153,7 @@ module.exports = function (primitives) {
       return false
     }
 
-    return {
-      keyAccessToken: generateToken(),
-      sessionToken: generateToken()
-    }
+    return true
   }
 
   function serverRequest (input) {
