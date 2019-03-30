@@ -208,6 +208,7 @@ module.exports = function (primitives) {
     var keyAccessToken = input.keyAccessToken
     assert(Buffer.isBuffer(keyAccessToken))
 
+    // TODO: Only call function to derive what we need.
     var fromKeyAccessToken = deriveFromKeyAccessToken(keyAccessToken)
     // var tokenID = fromKeyAccessToken.tokenID
     // var requestAuthenticationKey = fromKeyAccessToken.requestAuthenticationKey
