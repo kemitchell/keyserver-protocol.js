@@ -77,7 +77,7 @@ module.exports = function (primitives) {
     var password = input.password
     assert(typeof password === 'string')
     assert(password.length > 0)
-    var passwordBuffer = Buffer.from(password, 'utf')
+    var passwordBuffer = Buffer.from(password, 'utf8')
 
     var email = input.email
     assert(typeof email === 'string')
