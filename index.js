@@ -21,11 +21,11 @@ module.exports = function (primitives) {
   assert(Number.isInteger(serverStretchSaltLength))
   assert(serverStretchSaltLength > 0)
 
-  var hkdf = primitives.hkdf
-  assert(typeof hkdf === 'function')
+  var deriveKey = primitives.deriveKey
+  assert(typeof deriveKey === 'function')
 
-  var hmac = primitives.hmac
-  assert(typeof hmac === 'function')
+  var authenticate = primitives.authenticate
+  assert(typeof authenticate === 'function')
 
   var random = primitives.random
   assert(typeof random === 'function')
@@ -36,7 +36,7 @@ module.exports = function (primitives) {
   var generateToken = primitives.generateToken
   assert(typeof generateToken === 'function')
 
-  // HKDF Parameters
+  // Key Derivation Parameters
 
   var verificationHashSubkey = primitives.verificationHashSubkey
   assert(Number.isInteger(verificationHashSubkey))
@@ -102,7 +102,7 @@ module.exports = function (primitives) {
     var clientStretchedPassword = clientStretch({
       password: passwordBuffer, salt: emailBuffer
     })
-    var authenticationToken = hkdf({
+    var authenticationToken = deriveKey({
       key: clientStretchedPassword,
       subkey: authenticationTokenSubkey,
       context: authenticationTokenContext
@@ -130,7 +130,7 @@ module.exports = function (primitives) {
       password: authenticationToken,
       salt: authenticationSalt
     })
-    var verificationHash = hkdf({
+    var verificationHash = deriveKey({
       key: serverStretchedPassword,
       subkey: verificationHashSubkey,
       context: verificationHashContext
@@ -167,7 +167,7 @@ module.exports = function (primitives) {
 
     var storedVerificationHash = input.verificationHash
 
-    var computedVerificationHash = hkdf({
+    var computedVerificationHash = deriveKey({
       key: serverStretchedPassword,
       subkey: verificationHashContext,
       context: verificationHashContext
@@ -198,7 +198,7 @@ module.exports = function (primitives) {
     assert(Buffer.isBuffer(keyAccessToken))
     assert(keyAccessToken.byteLength > 0)
 
-    var serverKey = hkdf({
+    var serverKey = deriveKey({
       key: serverStretchedPassword,
       subkey: serverKeySubkey,
       context: serverKeyContext
@@ -215,7 +215,7 @@ module.exports = function (primitives) {
     var responseEncryptionKey = fromKeyRequestToken.responseEncryptionKey
 
     var ciphertext = xor(clientWrappedKey, responseEncryptionKey)
-    var mac = hmac({
+    var mac = authenticate({
       key: responseAuthenticationKey,
       input: ciphertext
     })
@@ -252,7 +252,7 @@ module.exports = function (primitives) {
     var responseAuthenticationKey = fromKeyRequestToken.responseAuthenticationKey
     var responseEncryptionKey = fromKeyRequestToken.responseEncryptionKey
 
-    var computedMAC = hmac({
+    var computedMAC = authenticate({
       key: responseAuthenticationKey,
       input: ciphertext
     })
@@ -261,7 +261,7 @@ module.exports = function (primitives) {
 
     var clientWrappedKey = xor(ciphertext, responseEncryptionKey)
 
-    var clientKey = hkdf({
+    var clientKey = deriveKey({
       key: clientStretchedPassword,
       subkey: clientKeySubkey,
       context: clientKeyContext
@@ -276,13 +276,13 @@ module.exports = function (primitives) {
 
   function deriveFromKeyAccessToken (keyAccessToken) {
     // TODO: Verify this is best for > crypto_kdf_BYTES_MAX.
-    var tokenID = hkdf({
+    var tokenID = deriveKey({
       key: keyAccessToken,
       subkey: tokenIDSubkey,
       context: tokenIDContext,
       length: 32
     })
-    var buffer = hkdf({
+    var buffer = deriveKey({
       key: keyAccessToken,
       subkey: fromKeyAccessTokenSubkey,
       context: fromKeyAccessTokenContext,
@@ -297,7 +297,7 @@ module.exports = function (primitives) {
   }
 
   function deriveFromKeyRequestToken (keyRequestToken) {
-    var buffer = hkdf({
+    var buffer = deriveKey({
       key: keyRequestToken,
       subkey: fromKeyRequestTokenSubkey,
       context: fromKeyRequestTokenContext,

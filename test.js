@@ -53,7 +53,7 @@ var protocol = require('./')({
   tokenIDSubkey: 6,
   tokenIDContext: Buffer.from('token-ID'),
 
-  hkdf: function (options) {
+  deriveKey: function (options) {
     var key = options.key
     var subkey = options.subkey
     var context = options.context
@@ -68,7 +68,7 @@ var protocol = require('./')({
     return returned
   },
 
-  hmac: function (options) {
+  authenticate: function (options) {
     var key = options.key
     var input = options.input
     var returned = Buffer.alloc(sodium.crypto_auth_BYTES)
