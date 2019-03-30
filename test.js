@@ -32,26 +32,40 @@ var protocol = require('./')({
     return returned
   },
 
-  authenticationTokenSubkey: 1,
-  authenticationTokenContext: Buffer.from('authTokn'),
+  authenticationToken: {
+    subkey: 1,
+    context: Buffer.from('authTokn')
+  },
 
-  verificationHashSubkey: 2,
-  verificationHashContext: Buffer.from('verifHsh'),
+  verificationHash: {
+    subkey: 2,
+    context: Buffer.from('verifHsh')
+  },
 
-  serverKeySubkey: 3,
-  serverKeyContext: Buffer.from('serverKy'),
+  serverKey: {
+    subkey: 3,
+    context: Buffer.from('serverKy')
+  },
 
-  clientKeySubkey: 3,
-  clientKeyContext: Buffer.from('clientKy'),
+  clientKey: {
+    subkey: 4,
+    context: Buffer.from('clientKy')
+  },
 
-  fromKeyAccessTokenSubkey: 4,
-  fromKeyAccessTokenContext: Buffer.from('fromKATn'),
+  fromKeyAccessToken: {
+    subkey: 5,
+    context: Buffer.from('fromKATn')
+  },
 
-  fromKeyRequestTokenSubkey: 5,
-  fromKeyRequestTokenContext: Buffer.from('fromKRTn'),
+  fromKeyRequestToken: {
+    subkey: 6,
+    context: Buffer.from('fromKRTn')
+  },
 
-  tokenIDSubkey: 6,
-  tokenIDContext: Buffer.from('token-ID'),
+  tokenID: {
+    subkey: 7,
+    context: Buffer.from('token-ID')
+  },
 
   deriveKey: function (options) {
     var key = options.key

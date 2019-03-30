@@ -38,40 +38,26 @@ module.exports = function (primitives) {
 
   // Key Derivation Parameters
 
-  var verificationHashSubkey = primitives.verificationHashSubkey
-  assert(Number.isInteger(verificationHashSubkey))
-  var verificationHashContext = primitives.verificationHashContext
-  assert(Buffer.isBuffer(verificationHashContext))
+  var verificationHashParameters = primitives.verificationHash
+  assert(typeof verificationHashParameters === 'object')
 
-  var authenticationTokenSubkey = primitives.authenticationTokenSubkey
-  assert(Number.isInteger(authenticationTokenSubkey))
-  var authenticationTokenContext = primitives.authenticationTokenContext
-  assert(Buffer.isBuffer(authenticationTokenContext))
+  var authenticationTokenParameters = primitives.authenticationToken
+  assert(typeof authenticationTokenParameters === 'object')
 
-  var clientKeySubkey = primitives.clientKeySubkey
-  assert(Number.isInteger(clientKeySubkey))
-  var clientKeyContext = primitives.clientKeyContext
-  assert(Buffer.isBuffer(clientKeyContext))
+  var clientKeyParameters = primitives.clientKey
+  assert(typeof clientKeyParameters === 'object')
 
-  var serverKeySubkey = primitives.serverKeySubkey
-  assert(Number.isInteger(serverKeySubkey))
-  var serverKeyContext = primitives.serverKeyContext
-  assert(Buffer.isBuffer(serverKeyContext))
+  var serverKeyParameters = primitives.serverKey
+  assert(typeof serverKeyParameters === 'object')
 
-  var fromKeyAccessTokenSubkey = primitives.fromKeyAccessTokenSubkey
-  assert(Number.isInteger(fromKeyAccessTokenSubkey))
-  var fromKeyAccessTokenContext = primitives.fromKeyAccessTokenContext
-  assert(Buffer.isBuffer(fromKeyAccessTokenContext))
+  var fromKeyAccessTokenParameters = primitives.fromKeyAccessToken
+  assert(typeof fromKeyAccessTokenParameters === 'object')
 
-  var fromKeyRequestTokenSubkey = primitives.fromKeyRequestTokenSubkey
-  assert(Number.isInteger(fromKeyRequestTokenSubkey))
-  var fromKeyRequestTokenContext = primitives.fromKeyRequestTokenContext
-  assert(Buffer.isBuffer(fromKeyRequestTokenContext))
+  var fromKeyRequestTokenParameters = primitives.fromKeyRequestToken
+  assert(typeof fromKeyRequestTokenParameters === 'object')
 
-  var tokenIDSubkey = primitives.tokenIDSubkey
-  assert(Number.isInteger(tokenIDSubkey))
-  var tokenIDContext = primitives.tokenIDContext
-  assert(Buffer.isBuffer(tokenIDContext))
+  var tokenIDParameters = primitives.tokenID
+  assert(typeof tokenIDParameters === 'object')
 
   return {
     client: {
@@ -102,11 +88,9 @@ module.exports = function (primitives) {
     var clientStretchedPassword = clientStretch({
       password: passwordBuffer, salt: emailBuffer
     })
-    var authenticationToken = deriveKey({
-      key: clientStretchedPassword,
-      subkey: authenticationTokenSubkey,
-      context: authenticationTokenContext
-    })
+    var parameters = { key: clientStretchedPassword }
+    Object.assign(parameters, authenticationTokenParameters)
+    var authenticationToken = deriveKey(parameters)
 
     return {
       authenticationToken,
@@ -130,11 +114,9 @@ module.exports = function (primitives) {
       password: authenticationToken,
       salt: authenticationSalt
     })
-    var verificationHash = deriveKey({
-      key: serverStretchedPassword,
-      subkey: verificationHashSubkey,
-      context: verificationHashContext
-    })
+    var parameters = { key: serverStretchedPassword }
+    Object.assign(parameters, verificationHashParameters)
+    var verificationHash = deriveKey(parameters)
     var serverWrappedKey = random(encryptionKeyLength)
     var userID = generateUserID()
 
@@ -167,11 +149,9 @@ module.exports = function (primitives) {
 
     var storedVerificationHash = input.verificationHash
 
-    var computedVerificationHash = deriveKey({
-      key: serverStretchedPassword,
-      subkey: verificationHashContext,
-      context: verificationHashContext
-    })
+    var parameters = { key: serverStretchedPassword }
+    Object.assign(parameters, verificationHashParameters)
+    var computedVerificationHash = deriveKey(parameters)
 
     if (!storedVerificationHash.equals(computedVerificationHash)) {
       return false
@@ -198,11 +178,9 @@ module.exports = function (primitives) {
     assert(Buffer.isBuffer(keyAccessToken))
     assert(keyAccessToken.byteLength > 0)
 
-    var serverKey = deriveKey({
-      key: serverStretchedPassword,
-      subkey: serverKeySubkey,
-      context: serverKeyContext
-    })
+    var parameters = { key: serverStretchedPassword }
+    Object.assign(parameters, serverKeyParameters)
+    var serverKey = deriveKey(parameters)
     var clientWrappedKey = xor(serverKey, serverWrappedKey)
 
     var fromKeyAccessToken = deriveFromKeyAccessToken(keyAccessToken)
@@ -261,11 +239,9 @@ module.exports = function (primitives) {
 
     var clientWrappedKey = xor(ciphertext, responseEncryptionKey)
 
-    var clientKey = deriveKey({
-      key: clientStretchedPassword,
-      subkey: clientKeySubkey,
-      context: clientKeyContext
-    })
+    var parameters = { key: clientStretchedPassword }
+    Object.assign(parameters, clientKeyParameters)
+    var clientKey = deriveKey(parameters)
 
     var encryptionKey = xor(clientWrappedKey, clientKey)
 
@@ -276,18 +252,16 @@ module.exports = function (primitives) {
 
   function deriveFromKeyAccessToken (keyAccessToken) {
     // TODO: Verify this is best for > crypto_kdf_BYTES_MAX.
-    var tokenID = deriveKey({
+    var tokenParameters = { key: keyAccessToken }
+    Object.assign(tokenParameters, tokenIDParameters)
+    var tokenID = deriveKey(tokenParameters)
+
+    var otherParameters = {
       key: keyAccessToken,
-      subkey: tokenIDSubkey,
-      context: tokenIDContext,
-      length: 32
-    })
-    var buffer = deriveKey({
-      key: keyAccessToken,
-      subkey: fromKeyAccessTokenSubkey,
-      context: fromKeyAccessTokenContext,
       length: 2 * 32
-    })
+    }
+    Object.assign(otherParameters, fromKeyAccessTokenParameters)
+    var buffer = deriveKey(otherParameters)
 
     return {
       keyRequestToken: buffer.slice(32, 64),
@@ -297,12 +271,12 @@ module.exports = function (primitives) {
   }
 
   function deriveFromKeyRequestToken (keyRequestToken) {
-    var buffer = deriveKey({
+    var parameters = {
       key: keyRequestToken,
-      subkey: fromKeyRequestTokenSubkey,
-      context: fromKeyRequestTokenContext,
       length: 2 * 32
-    })
+    }
+    Object.assign(parameters, fromKeyRequestTokenParameters)
+    var buffer = deriveKey(parameters)
 
     return {
       responseAuthenticationKey: buffer.slice(0, 32),
