@@ -50,18 +50,28 @@ var protocol = require('./')({
     context: Buffer.from('clientKy')
   },
 
-  fromKeyAccessToken: {
+  requestAuthenticationKey: {
     subkey: 5,
-    context: Buffer.from('fromKATn')
+    context: Buffer.from('reqAthKy')
   },
 
-  fromKeyRequestToken: {
+  responseAuthenticationKey: {
     subkey: 6,
-    context: Buffer.from('fromKRTn')
+    context: Buffer.from('resAthKy')
+  },
+
+  responseEncryptionKey: {
+    subkey: 7,
+    context: Buffer.from('resEncKy')
+  },
+
+  keyRequestToken: {
+    subkey: 8,
+    context: Buffer.from('kyReqTkn')
   },
 
   tokenID: {
-    subkey: 7,
+    subkey: 9,
     context: Buffer.from('token-ID')
   },
 

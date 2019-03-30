@@ -41,11 +41,17 @@ module.exports = function (configuration) {
   var serverKeyParameters = configuration.serverKey
   assert(typeof serverKeyParameters === 'object')
 
-  var fromKeyAccessTokenParameters = configuration.fromKeyAccessToken
-  assert(typeof fromKeyAccessTokenParameters === 'object')
+  var responseAuthenticationKeyParameters = configuration.responseAuthenticationKey
+  assert(typeof responseAuthenticationKeyParameters === 'object')
 
-  var fromKeyRequestTokenParameters = configuration.fromKeyRequestToken
-  assert(typeof fromKeyRequestTokenParameters === 'object')
+  var responseEncryptionKeyParameters = configuration.responseEncryptionKey
+  assert(typeof responseEncryptionKeyParameters === 'object')
+
+  var requestAuthenticationKeyParameters = configuration.requestAuthenticationKey
+  assert(typeof requestAuthenticationKeyParameters === 'object')
+
+  var keyRequestTokenParameters = configuration.keyRequestToken
+  assert(typeof keyRequestTokenParameters === 'object')
 
   var tokenIDParameters = configuration.tokenID
   assert(typeof tokenIDParameters === 'object')
@@ -238,35 +244,42 @@ module.exports = function (configuration) {
 
   function deriveFromKeyAccessToken (keyAccessToken) {
     // TODO: Verify this is best for > crypto_kdf_BYTES_MAX.
-    var tokenParameters = { key: keyAccessToken }
-    Object.assign(tokenParameters, tokenIDParameters)
-    var tokenID = deriveKey(tokenParameters)
-
-    var otherParameters = {
-      key: keyAccessToken,
-      length: 2 * 32
-    }
-    Object.assign(otherParameters, fromKeyAccessTokenParameters)
-    var buffer = deriveKey(otherParameters)
-
     return {
-      keyRequestToken: buffer.slice(32, 64),
-      requestAuthenticationKey: buffer.slice(0, 32),
-      tokenID
+      keyRequestToken: deriveKey(
+        Object.assign(
+          { key: keyAccessToken },
+          keyRequestTokenParameters
+        )
+      ),
+      requestAuthenticationKey: deriveKey(
+        Object.assign(
+          { key: keyAccessToken },
+          requestAuthenticationKeyParameters
+        )
+      ),
+      tokenID: deriveKey(
+        Object.assign(
+          { key: keyAccessToken },
+          tokenIDParameters
+        )
+      )
     }
   }
 
   function deriveFromKeyRequestToken (keyRequestToken) {
-    var parameters = {
-      key: keyRequestToken,
-      length: 2 * 32
-    }
-    Object.assign(parameters, fromKeyRequestTokenParameters)
-    var buffer = deriveKey(parameters)
-
     return {
-      responseAuthenticationKey: buffer.slice(0, 32),
-      responseEncryptionKey: buffer.slice(32, 64)
+      responseAuthenticationKey: deriveKey(
+        Object.assign(
+          { key: keyRequestToken },
+          responseAuthenticationKeyParameters
+        )
+      ),
+      responseEncryptionKey: deriveKey(
+        Object.assign(
+          { key: keyRequestToken },
+          responseEncryptionKeyParameters
+        )
+      )
     }
   }
 }
