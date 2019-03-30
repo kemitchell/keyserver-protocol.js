@@ -1,53 +1,53 @@
 var assert = require('assert')
 
-module.exports = function (primitives) {
-  assert(typeof primitives === 'object')
+module.exports = function (configuration) {
+  assert(typeof configuration === 'object')
 
   // Cryptographic Primitives
 
-  var clientStretch = primitives.clientStretch
+  var clientStretch = configuration.clientStretch
   assert(typeof clientStretch === 'function')
 
-  var serverStretch = primitives.serverStretch
+  var serverStretch = configuration.serverStretch
   assert(typeof serverStretch === 'function')
 
-  var serverStretchSaltLength = primitives.serverStretchSaltLength
+  var serverStretchSaltLength = configuration.serverStretchSaltLength
   assert(Number.isInteger(serverStretchSaltLength))
   assert(serverStretchSaltLength > 0)
 
-  var deriveKey = primitives.deriveKey
+  var deriveKey = configuration.deriveKey
   assert(typeof deriveKey === 'function')
 
-  var authenticate = primitives.authenticate
+  var authenticate = configuration.authenticate
   assert(typeof authenticate === 'function')
 
-  var random = primitives.random
+  var random = configuration.random
   assert(typeof random === 'function')
 
-  var generateUserID = primitives.generateUserID
+  var generateUserID = configuration.generateUserID
   assert(typeof generateUserID === 'function')
 
   // Key Derivation Parameters
 
-  var verificationHashParameters = primitives.verificationHash
+  var verificationHashParameters = configuration.verificationHash
   assert(typeof verificationHashParameters === 'object')
 
-  var authenticationTokenParameters = primitives.authenticationToken
+  var authenticationTokenParameters = configuration.authenticationToken
   assert(typeof authenticationTokenParameters === 'object')
 
-  var clientKeyParameters = primitives.clientKey
+  var clientKeyParameters = configuration.clientKey
   assert(typeof clientKeyParameters === 'object')
 
-  var serverKeyParameters = primitives.serverKey
+  var serverKeyParameters = configuration.serverKey
   assert(typeof serverKeyParameters === 'object')
 
-  var fromKeyAccessTokenParameters = primitives.fromKeyAccessToken
+  var fromKeyAccessTokenParameters = configuration.fromKeyAccessToken
   assert(typeof fromKeyAccessTokenParameters === 'object')
 
-  var fromKeyRequestTokenParameters = primitives.fromKeyRequestToken
+  var fromKeyRequestTokenParameters = configuration.fromKeyRequestToken
   assert(typeof fromKeyRequestTokenParameters === 'object')
 
-  var tokenIDParameters = primitives.tokenID
+  var tokenIDParameters = configuration.tokenID
   assert(typeof tokenIDParameters === 'object')
 
   return {
