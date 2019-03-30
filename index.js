@@ -77,13 +77,13 @@ module.exports = function (primitives) {
     var password = input.password
     assert(typeof password === 'string')
     assert(password.length > 0)
-    var passwordBuffer = Buffer.from(password)
+    var passwordBuffer = Buffer.from(password, 'utf')
 
     var email = input.email
     assert(typeof email === 'string')
     assert(email.length > 0)
     assert(email.indexOf('@') > 1)
-    var emailBuffer = Buffer.from(email)
+    var emailBuffer = Buffer.from(email, 'utf8')
 
     var clientStretchedPassword = clientStretch({
       password: passwordBuffer, salt: emailBuffer
