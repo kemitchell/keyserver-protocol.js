@@ -1,0 +1,50 @@
+digraph {
+
+  subgraph cluster_0 {
+    label="client";
+    password;
+    email;
+    clientStretch;
+    {password, email} -> clientStretch -> clientStretchedPassword;
+    deriveAuthenticationToken[label="deriveKey"];
+    clientStretchedPassword -> deriveAuthenticationToken -> authenticationToken;
+
+    xorEncryptionKey[label="XOR"];
+    clientWrappedKeyOnClient[label="clientWrappedKey"];
+    {clientWrappedKeyOnClient, clientKey} -> xorEncryptionKey -> encryptionKey;
+  }
+
+  subgraph cluster_1 {
+    label="server";
+    authenticationToken
+    authenticationSalt;
+    randomAuthenticationSalt[label="random"];
+    randomAuthenticationSalt -> authenticationSalt;
+    deriveServerStretched[label="deriveKey"];
+    {authenticationToken, authenticationSalt} -> deriveServerStretched -> serverStretchedPassword;
+    deriveVerificationHash[label="deriveKey"];
+    serverStretchedPassword -> deriveVerificationHash -> verificationHash;
+    randomSeverWrappedKey[label="random"];
+    randomSeverWrappedKey -> serverWrappedKey;
+    // randomUserID[label="random"];
+    //randomUserID -> userID;
+
+    //keyAccessToken -> deriveTokenID -> tokenID;
+    keyAccessToken -> deriveRequestAuthenticationKey -> requestAuthenticationKey;
+    keyAccessToken -> deriveKeyRequestToken -> keyRequestToken;
+
+    deriveResponseAuthenticationKey[label="deriveKey"];
+    deriveResponseEncryptionKey[label="deriveKey"];
+    keyRequestToken -> deriveResponseAuthenticationKey -> responseAuthenticationKey;
+    keyRequestToken -> deriveResponseEncryptionKey -> responseEncryptionKey;
+
+    xorCiphertext[label="XOR"];
+    clientWrappedKeyOnServer[label="clientWrappedKey"];
+    {clientWrappedKeyOnServer, responseEncryptionKey} -> xorCiphertext -> ciphertext;
+    macCiphertext[label="MAC"];
+    {ciphertext, responseAuthenticationKey} -> macCiphertext -> mac;
+    xorClientWrappedKey[label="XOR"];
+    {serverKey, serverWrappedKey} -> xorClientWrappedKey -> clientWrappedKeyOnServer;
+    clientWrappedKeyOnServer -> clientWrappedKeyOnClient;
+  }
+}
