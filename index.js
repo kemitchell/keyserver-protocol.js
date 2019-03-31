@@ -86,9 +86,9 @@ module.exports = function (configuration) {
       password: passwordBuffer,
       salt: emailBuffer
     })
-    var parameters = { key: clientStretchedPassword }
-    Object.assign(parameters, authenticationTokenParameters)
-    var authenticationToken = deriveKey(parameters)
+    var authenticationToken = deriveKeyHelper(
+      clientStretchedPassword, authenticationTokenParameters
+    )
 
     return {
       authenticationToken,
@@ -112,9 +112,9 @@ module.exports = function (configuration) {
       password: authenticationToken,
       salt: authenticationSalt
     })
-    var parameters = { key: serverStretchedPassword }
-    Object.assign(parameters, verificationHashParameters)
-    var verificationHash = deriveKey(parameters)
+    var verificationHash = deriveKeyHelper(
+      serverStretchedPassword, verificationHashParameters
+    )
     var serverWrappedKey = random(32)
     var userID = generateUserID()
 
@@ -145,9 +145,9 @@ module.exports = function (configuration) {
 
     var storedVerificationHash = input.verificationHash
 
-    var parameters = { key: serverStretchedPassword }
-    Object.assign(parameters, verificationHashParameters)
-    var computedVerificationHash = deriveKey(parameters)
+    var computedVerificationHash = deriveKeyHelper(
+      serverStretchedPassword, verificationHashParameters
+    )
 
     if (!storedVerificationHash.equals(computedVerificationHash)) {
       return false
@@ -173,39 +173,26 @@ module.exports = function (configuration) {
 
     var parameters = { key: serverStretchedPassword }
     Object.assign(parameters, serverKeyParameters)
-    var serverKey = deriveKey(parameters)
+    var serverKey = deriveKeyHelper(
+      serverStretchedPassword, serverKeyParameters
+    )
     var clientWrappedKey = xor(serverKey, serverWrappedKey)
 
-    var tokenID = deriveKey(
-      Object.assign(
-        { key: keyAccessToken },
-        tokenIDParameters
-      )
+    var tokenID = deriveKeyHelper(
+      keyAccessToken, tokenIDParameters
     )
-    var requestAuthenticationKey = deriveKey(
-      Object.assign(
-        { key: keyAccessToken },
-        requestAuthenticationKeyParameters
-      )
+    var requestAuthenticationKey = deriveKeyHelper(
+      keyAccessToken, requestAuthenticationKeyParameters
     )
-    var keyRequestToken = deriveKey(
-      Object.assign(
-        { key: keyAccessToken },
-        keyRequestTokenParameters
-      )
+    var keyRequestToken = deriveKeyHelper(
+      keyAccessToken, keyRequestTokenParameters
     )
 
-    var responseEncryptionKey = deriveKey(
-      Object.assign(
-        { key: keyRequestToken },
-        responseEncryptionKeyParameters
-      )
+    var responseEncryptionKey = deriveKeyHelper(
+      keyRequestToken, responseEncryptionKeyParameters
     )
-    var responseAuthenticationKey = deriveKey(
-      Object.assign(
-        { key: keyRequestToken },
-        responseAuthenticationKeyParameters
-      )
+    var responseAuthenticationKey = deriveKeyHelper(
+      keyRequestToken, responseAuthenticationKeyParameters
     )
 
     var ciphertext = xor(clientWrappedKey, responseEncryptionKey)
@@ -237,24 +224,15 @@ module.exports = function (configuration) {
     var keyAccessToken = input.keyAccessToken
     assert(Buffer.isBuffer(keyAccessToken))
 
-    var keyRequestToken = deriveKey(
-      Object.assign(
-        { key: keyAccessToken },
-        keyRequestTokenParameters
-      )
+    var keyRequestToken = deriveKeyHelper(
+      keyAccessToken, keyRequestTokenParameters
     )
 
-    var responseAuthenticationKey = deriveKey(
-      Object.assign(
-        { key: keyRequestToken },
-        responseAuthenticationKeyParameters
-      )
+    var responseAuthenticationKey = deriveKeyHelper(
+      keyRequestToken, responseAuthenticationKeyParameters
     )
-    var responseEncryptionKey = deriveKey(
-      Object.assign(
-        { key: keyRequestToken },
-        responseEncryptionKeyParameters
-      )
+    var responseEncryptionKey = deriveKeyHelper(
+      keyRequestToken, responseEncryptionKeyParameters
     )
 
     var computedMAC = authenticate({
@@ -266,13 +244,19 @@ module.exports = function (configuration) {
 
     var clientWrappedKey = xor(ciphertext, responseEncryptionKey)
 
-    var parameters = { key: clientStretchedPassword }
-    Object.assign(parameters, clientKeyParameters)
-    var clientKey = deriveKey(parameters)
+    var clientKey = deriveKeyHelper(
+      clientStretchedPassword, clientKeyParameters
+    )
 
     var encryptionKey = xor(clientWrappedKey, clientKey)
 
     return { encryptionKey }
+  }
+
+  function deriveKeyHelper (key, defaults) {
+    var parameters = { key }
+    Object.assign(parameters, defaults)
+    return deriveKey(parameters)
   }
 }
 
