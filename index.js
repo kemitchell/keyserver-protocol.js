@@ -254,6 +254,8 @@ module.exports = function (configuration) {
   }
 
   function deriveKeyHelper (key, defaults) {
+    assert(Buffer.isBuffer(key))
+    assert(typeof defaults === 'object')
     var parameters = { key }
     Object.assign(parameters, defaults)
     return deriveKey(parameters)
@@ -261,6 +263,7 @@ module.exports = function (configuration) {
 }
 
 function xor (a, b) {
+  assert(a.length === b.length)
   var returned = Buffer.alloc(a.length)
   for (var offset = 0; offset < a.length; offset++) {
     returned[offset] = a[offset] ^ b[offset]
