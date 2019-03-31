@@ -117,7 +117,9 @@ var clientLogin = protocol.client.login({
 })
 
 assert(clientLogin.hasOwnProperty('clientStretchedPassword'))
+assert(clientLogin.clientStretchedPassword.length === 32)
 assert(clientLogin.hasOwnProperty('authenticationToken'))
+assert(clientLogin.authenticationToken.length === 32)
 
 var serverRegister = protocol.server.register({
   clientStretchedPassword: clientLogin.clientStretchedPassword,
@@ -125,10 +127,15 @@ var serverRegister = protocol.server.register({
 })
 
 assert(serverRegister.hasOwnProperty('authenticationSalt'))
+assert(serverRegister.authenticationSalt.length === 32)
 assert(serverRegister.hasOwnProperty('serverStretchedPassword'))
+assert(serverRegister.serverStretchedPassword.length === 32)
 assert(serverRegister.hasOwnProperty('serverWrappedKey'))
+assert(serverRegister.serverWrappedKey.length === 32)
 assert(serverRegister.hasOwnProperty('userID'))
+assert(serverRegister.userID.length === 32)
 assert(serverRegister.hasOwnProperty('verificationHash'))
+assert(serverRegister.verificationHash.length === 32)
 
 var keyAccessToken = random(32)
 
@@ -139,9 +146,13 @@ var serverRequest = protocol.server.request({
 })
 
 assert(serverRequest.hasOwnProperty('tokenID'))
+assert(serverRequest.tokenID.length === 32)
 assert(serverRequest.hasOwnProperty('ciphertext'))
+assert(serverRequest.ciphertext.length === 32)
 assert(serverRequest.hasOwnProperty('mac'))
+assert(serverRequest.mac.length === 32)
 assert(serverRequest.hasOwnProperty('requestAuthenticationKey'))
+assert(serverRequest.requestAuthenticationKey.length === 32)
 
 var clientRequest = protocol.client.request({
   ciphertext: serverRequest.ciphertext,
@@ -151,3 +162,4 @@ var clientRequest = protocol.client.request({
 })
 
 assert(clientRequest.hasOwnProperty('encryptionKey'))
+assert(clientRequest.encryptionKey.length === 32)
