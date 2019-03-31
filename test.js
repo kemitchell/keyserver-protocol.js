@@ -145,6 +145,14 @@ var serverLogin = protocol.server.login({
 
 assert(serverLogin === true)
 
+var badServerLogin = protocol.server.login({
+  authenticationToken: clientLogin.authenticationToken,
+  authenticationSalt: serverRegister.authenticationSalt,
+  verificationHash: Buffer.alloc(32)
+})
+
+assert(badServerLogin === false)
+
 var keyAccessToken = random(32)
 
 var serverRequest = protocol.server.request({
@@ -171,3 +179,12 @@ var clientRequest = protocol.client.request({
 
 assert(clientRequest.hasOwnProperty('encryptionKey'))
 assert(clientRequest.encryptionKey.length === 32)
+
+var badClientRequest = protocol.client.request({
+  ciphertext: serverRequest.ciphertext,
+  mac: Buffer.alloc(32),
+  clientStretchedPassword: clientLogin.clientStretchedPassword,
+  keyAccessToken
+})
+
+assert(badClientRequest === false)
