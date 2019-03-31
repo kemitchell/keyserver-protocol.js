@@ -138,12 +138,14 @@ module.exports = function (configuration) {
     assert(Buffer.isBuffer(authenticationSalt))
     assert(authenticationSalt.byteLength > 0)
 
+    var storedVerificationHash = input.verificationHash
+    assert(Buffer.isBuffer(storedVerificationHash))
+    assert(storedVerificationHash.byteLength > 0)
+
     var serverStretchedPassword = serverStretch({
       password: authenticationToken,
       salt: authenticationSalt
     })
-
-    var storedVerificationHash = input.verificationHash
 
     var computedVerificationHash = deriveKeyHelper(
       serverStretchedPassword, verificationHashParameters

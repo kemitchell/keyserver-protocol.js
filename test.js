@@ -137,6 +137,14 @@ assert(serverRegister.userID.length === 32)
 assert(serverRegister.hasOwnProperty('verificationHash'))
 assert(serverRegister.verificationHash.length === 32)
 
+var serverLogin = protocol.server.login({
+  authenticationToken: clientLogin.authenticationToken,
+  authenticationSalt: serverRegister.authenticationSalt,
+  verificationHash: serverRegister.verificationHash
+})
+
+assert(serverLogin === true)
+
 var keyAccessToken = random(32)
 
 var serverRequest = protocol.server.request({
