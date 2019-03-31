@@ -255,12 +255,10 @@ module.exports = function (configuration) {
     return { encryptionKey }
   }
 
-  function deriveKeyHelper (key, defaults) {
+  function deriveKeyHelper (key, parameters) {
     assert(Buffer.isBuffer(key))
-    assert(typeof defaults === 'object')
-    var parameters = { key }
-    Object.assign(parameters, defaults)
-    return deriveKey(parameters)
+    assert(typeof parameters === 'object')
+    return deriveKey(Object.assign({ key }, parameters))
   }
 }
 
