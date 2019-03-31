@@ -176,14 +176,37 @@ module.exports = function (configuration) {
     var serverKey = deriveKey(parameters)
     var clientWrappedKey = xor(serverKey, serverWrappedKey)
 
-    var fromKeyAccessToken = deriveFromKeyAccessToken(keyAccessToken)
-    var tokenID = fromKeyAccessToken.tokenID
-    var requestAuthenticationKey = fromKeyAccessToken.requestAuthenticationKey
-    var keyRequestToken = fromKeyAccessToken.keyRequestToken
+    var tokenID = deriveKey(
+      Object.assign(
+        { key: keyAccessToken },
+        tokenIDParameters
+      )
+    )
+    var requestAuthenticationKey = deriveKey(
+      Object.assign(
+        { key: keyAccessToken },
+        requestAuthenticationKeyParameters
+      )
+    )
+    var keyRequestToken = deriveKey(
+      Object.assign(
+        { key: keyAccessToken },
+        keyRequestTokenParameters
+      )
+    )
 
-    var fromKeyRequestToken = deriveFromKeyRequestToken(keyRequestToken)
-    var responseAuthenticationKey = fromKeyRequestToken.responseAuthenticationKey
-    var responseEncryptionKey = fromKeyRequestToken.responseEncryptionKey
+    var responseEncryptionKey = deriveKey(
+      Object.assign(
+        { key: keyRequestToken },
+        responseEncryptionKeyParameters
+      )
+    )
+    var responseAuthenticationKey = deriveKey(
+      Object.assign(
+        { key: keyRequestToken },
+        responseAuthenticationKeyParameters
+      )
+    )
 
     var ciphertext = xor(clientWrappedKey, responseEncryptionKey)
     var mac = authenticate({
@@ -214,15 +237,25 @@ module.exports = function (configuration) {
     var keyAccessToken = input.keyAccessToken
     assert(Buffer.isBuffer(keyAccessToken))
 
-    // TODO: Only call function to derive what we need.
-    var fromKeyAccessToken = deriveFromKeyAccessToken(keyAccessToken)
-    // var tokenID = fromKeyAccessToken.tokenID
-    // var requestAuthenticationKey = fromKeyAccessToken.requestAuthenticationKey
-    var keyRequestToken = fromKeyAccessToken.keyRequestToken
+    var keyRequestToken = deriveKey(
+      Object.assign(
+        { key: keyAccessToken },
+        keyRequestTokenParameters
+      )
+    )
 
-    var fromKeyRequestToken = deriveFromKeyRequestToken(keyRequestToken)
-    var responseAuthenticationKey = fromKeyRequestToken.responseAuthenticationKey
-    var responseEncryptionKey = fromKeyRequestToken.responseEncryptionKey
+    var responseAuthenticationKey = deriveKey(
+      Object.assign(
+        { key: keyRequestToken },
+        responseAuthenticationKeyParameters
+      )
+    )
+    var responseEncryptionKey = deriveKey(
+      Object.assign(
+        { key: keyRequestToken },
+        responseEncryptionKeyParameters
+      )
+    )
 
     var computedMAC = authenticate({
       key: responseAuthenticationKey,
@@ -240,47 +273,6 @@ module.exports = function (configuration) {
     var encryptionKey = xor(clientWrappedKey, clientKey)
 
     return { encryptionKey }
-  }
-
-  function deriveFromKeyAccessToken (keyAccessToken) {
-    // TODO: Verify this is best for > crypto_kdf_BYTES_MAX.
-    return {
-      keyRequestToken: deriveKey(
-        Object.assign(
-          { key: keyAccessToken },
-          keyRequestTokenParameters
-        )
-      ),
-      requestAuthenticationKey: deriveKey(
-        Object.assign(
-          { key: keyAccessToken },
-          requestAuthenticationKeyParameters
-        )
-      ),
-      tokenID: deriveKey(
-        Object.assign(
-          { key: keyAccessToken },
-          tokenIDParameters
-        )
-      )
-    }
-  }
-
-  function deriveFromKeyRequestToken (keyRequestToken) {
-    return {
-      responseAuthenticationKey: deriveKey(
-        Object.assign(
-          { key: keyRequestToken },
-          responseAuthenticationKeyParameters
-        )
-      ),
-      responseEncryptionKey: deriveKey(
-        Object.assign(
-          { key: keyRequestToken },
-          responseEncryptionKeyParameters
-        )
-      )
-    }
   }
 }
 
