@@ -4,6 +4,9 @@
   "description": "e-mail-authenticated keyserver protocol inspired by Mozilla's onepw",
   "author": "Kyle E. Mitchell <kyle@kemitchell.com> (https://kemitchell.com/)",
   "repository": "proseline/keyserver-protocol.js",
+  "files": [
+    "index.js"
+  ],
   "devDependencies": {
     "nyc": "^13.3.0",
     "sodium-native": "^2.3.0",
