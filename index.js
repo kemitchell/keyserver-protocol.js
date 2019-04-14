@@ -153,11 +153,7 @@ module.exports = function (configuration) {
       serverStretchedPassword, verificationHashParameters
     )
 
-    if (!storedVerificationHash.equals(computedVerificationHash)) {
-      return false
-    }
-
-    return true
+    return storedVerificationHash.equals(computedVerificationHash)
   }
 
   function serverRequest (input) {
