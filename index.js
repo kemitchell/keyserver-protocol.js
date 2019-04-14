@@ -56,6 +56,8 @@ module.exports = function (configuration) {
   var tokenIDParameters = configuration.tokenID
   assert(typeof tokenIDParameters === 'object')
 
+  // API
+
   return {
     client: {
       login: clientLogin,
