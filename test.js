@@ -1,4 +1,5 @@
 var assert = require('assert')
+var has = require('has')
 var sodium = require('sodium-native')
 
 var protocol = require('./')({
@@ -116,9 +117,9 @@ var clientLogin = protocol.client.login({
   email: 'user@example.com'
 })
 
-assert(clientLogin.hasOwnProperty('clientStretchedPassword'))
+assert(has(clientLogin, 'clientStretchedPassword'))
 assert(clientLogin.clientStretchedPassword.length === 32)
-assert(clientLogin.hasOwnProperty('authenticationToken'))
+assert(has(clientLogin, 'authenticationToken'))
 assert(clientLogin.authenticationToken.length === 32)
 
 var serverRegister = protocol.server.register({
@@ -126,15 +127,15 @@ var serverRegister = protocol.server.register({
   authenticationToken: clientLogin.authenticationToken
 })
 
-assert(serverRegister.hasOwnProperty('authenticationSalt'))
+assert(has(serverRegister, 'authenticationSalt'))
 assert(serverRegister.authenticationSalt.length === 32)
-assert(serverRegister.hasOwnProperty('serverStretchedPassword'))
+assert(has(serverRegister, 'serverStretchedPassword'))
 assert(serverRegister.serverStretchedPassword.length === 32)
-assert(serverRegister.hasOwnProperty('serverWrappedKey'))
+assert(has(serverRegister, 'serverWrappedKey'))
 assert(serverRegister.serverWrappedKey.length === 32)
-assert(serverRegister.hasOwnProperty('userID'))
+assert(has(serverRegister, 'userID'))
 assert(serverRegister.userID.length === 32)
-assert(serverRegister.hasOwnProperty('verificationHash'))
+assert(has(serverRegister, 'verificationHash'))
 assert(serverRegister.verificationHash.length === 32)
 
 var serverLogin = protocol.server.login({
@@ -161,13 +162,13 @@ var serverRequest = protocol.server.request({
   keyAccessToken
 })
 
-assert(serverRequest.hasOwnProperty('tokenID'))
+assert(has(serverRequest, 'tokenID'))
 assert(serverRequest.tokenID.length === 32)
-assert(serverRequest.hasOwnProperty('ciphertext'))
+assert(has(serverRequest, 'ciphertext'))
 assert(serverRequest.ciphertext.length === 32)
-assert(serverRequest.hasOwnProperty('mac'))
+assert(has(serverRequest, 'mac'))
 assert(serverRequest.mac.length === 32)
-assert(serverRequest.hasOwnProperty('requestAuthenticationKey'))
+assert(has(serverRequest, 'requestAuthenticationKey'))
 assert(serverRequest.requestAuthenticationKey.length === 32)
 
 var clientRequest = protocol.client.request({
@@ -177,7 +178,7 @@ var clientRequest = protocol.client.request({
   keyAccessToken
 })
 
-assert(clientRequest.hasOwnProperty('encryptionKey'))
+assert(has(clientRequest, 'encryptionKey'))
 assert(clientRequest.encryptionKey.length === 32)
 
 var badClientRequest = protocol.client.request({
