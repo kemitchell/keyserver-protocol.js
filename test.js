@@ -16,7 +16,7 @@ var protocol = require('./')({
     return returned
   },
 
-  serverStretchSaltLength: 32,
+  serverStretchSaltLength: sodium.crypto_pwhash_SALTBYTES,
 
   serverStretch: function (options) {
     var password = options.password
@@ -128,7 +128,7 @@ var serverRegister = protocol.server.register({
 })
 
 assert(has(serverRegister, 'authenticationSalt'))
-assert(serverRegister.authenticationSalt.length === 32)
+assert(serverRegister.authenticationSalt.length === 16)
 assert(has(serverRegister, 'serverStretchedPassword'))
 assert(serverRegister.serverStretchedPassword.length === 32)
 assert(has(serverRegister, 'serverWrappedKey'))
