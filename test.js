@@ -2,6 +2,8 @@ var assert = require('assert')
 var has = require('has')
 var sodium = require('sodium-native')
 
+// Configure a protocol implementation with primitives
+// from sodium-native.
 var protocol = require('./')({
   clientStretch: function (options) {
     var password = options.password
@@ -112,6 +114,8 @@ function random (size) {
   return returned
 }
 
+// Test login computations.
+
 var clientLogin = protocol.client.login({
   password: 'apple sauce',
   email: 'user@example.com'
@@ -121,6 +125,8 @@ assert(has(clientLogin, 'clientStretchedPassword'))
 assert(clientLogin.clientStretchedPassword.length === 32)
 assert(has(clientLogin, 'authenticationToken'))
 assert(clientLogin.authenticationToken.length === 32)
+
+// Test server register computations.
 
 var serverRegister = protocol.server.register({
   clientStretchedPassword: clientLogin.clientStretchedPassword,
@@ -138,6 +144,8 @@ assert(serverRegister.userID.length === 32)
 assert(has(serverRegister, 'verificationHash'))
 assert(serverRegister.verificationHash.length === 32)
 
+// Test server login verification.
+
 var serverLogin = protocol.server.login({
   authenticationToken: clientLogin.authenticationToken,
   authenticationSalt: serverRegister.authenticationSalt,
@@ -153,6 +161,8 @@ var badServerLogin = protocol.server.login({
 })
 
 assert(badServerLogin === false)
+
+// Test access token request server computations.
 
 var keyAccessToken = random(32)
 
@@ -170,6 +180,8 @@ assert(has(serverRequest, 'mac'))
 assert(serverRequest.mac.length === 32)
 assert(has(serverRequest, 'requestAuthenticationKey'))
 assert(serverRequest.requestAuthenticationKey.length === 32)
+
+// Test access token request client computations.
 
 var clientRequest = protocol.client.request({
   ciphertext: serverRequest.ciphertext,
