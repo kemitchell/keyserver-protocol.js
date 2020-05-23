@@ -9,7 +9,7 @@
   ],
   "devDependencies": {
     "has": "^1.0.3",
-    "nyc": "^13.3.0",
+    "nyc": "^15.0.1",
     "sodium-native": "^2.3.0",
     "standard": "^14.3.4"
   },
