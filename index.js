@@ -10,8 +10,8 @@ module.exports = function ({
   generateUserID,
   verificationHash,
   authenticationToken: authenticationTokenParameters,
-  clientKey: clientKeyParameters,
-  serverKey: serverKeyParameters,
+  clientWrappingKey: clientWrappingKeyParameters,
+  serverWrappingKey: serverWrappingKeyParameters,
   verificationHash: verificationHashParameters,
   responseAuthenticationKey: responseAuthenticationKeyParameters,
   responseEncryptionKey: responseEncryptionKeyParameters,
@@ -32,8 +32,8 @@ module.exports = function ({
   // Key Derivation Parameters
   assert(typeof verificationHashParameters === 'object')
   assert(typeof authenticationTokenParameters === 'object')
-  assert(typeof clientKeyParameters === 'object')
-  assert(typeof serverKeyParameters === 'object')
+  assert(typeof clientWrappingKeyParameters === 'object')
+  assert(typeof serverWrappingKeyParameters === 'object')
   assert(typeof responseAuthenticationKeyParameters === 'object')
   assert(typeof responseEncryptionKeyParameters === 'object')
   assert(typeof requestAuthenticationKeyParameters === 'object')
@@ -95,13 +95,13 @@ module.exports = function ({
     const verificationHash = deriveKeyHelper(
       serverStretchedPassword, verificationHashParameters
     )
-    const serverWrappedKey = random(32)
+    const serverWrappedEncryptionKey = random(32)
     const userID = generateUserID()
 
     return {
       authenticationSalt,
       userID,
-      serverWrappedKey,
+      serverWrappedEncryptionKey,
       verificationHash,
       serverStretchedPassword
     }
@@ -135,24 +135,24 @@ module.exports = function ({
 
   function serverRequest ({
     serverStretchedPassword,
-    serverWrappedKey,
+    serverWrappedEncryptionKey,
     keyAccessToken
   }) {
     assert(Buffer.isBuffer(serverStretchedPassword))
     assert(serverStretchedPassword.byteLength > 0)
 
-    assert(Buffer.isBuffer(serverWrappedKey))
-    assert(serverWrappedKey.byteLength > 0)
+    assert(Buffer.isBuffer(serverWrappedEncryptionKey))
+    assert(serverWrappedEncryptionKey.byteLength > 0)
 
     assert(Buffer.isBuffer(keyAccessToken))
     assert(keyAccessToken.byteLength > 0)
 
     const parameters = { key: serverStretchedPassword }
-    Object.assign(parameters, serverKeyParameters)
-    const serverKey = deriveKeyHelper(
-      serverStretchedPassword, serverKeyParameters
+    Object.assign(parameters, serverWrappingKeyParameters)
+    const serverWrappingKey = deriveKeyHelper(
+      serverStretchedPassword, serverWrappingKeyParameters
     )
-    const clientWrappedKey = xor(serverKey, serverWrappedKey)
+    const clientWrappedEncryptionKey = xor(serverWrappingKey, serverWrappedEncryptionKey)
 
     const tokenID = deriveKeyHelper(
       keyAccessToken, tokenIDParameters
@@ -171,7 +171,7 @@ module.exports = function ({
       keyRequestToken, responseAuthenticationKeyParameters
     )
 
-    const ciphertext = xor(clientWrappedKey, responseEncryptionKey)
+    const ciphertext = xor(clientWrappedEncryptionKey, responseEncryptionKey)
     const mac = authenticate({
       key: responseAuthenticationKey,
       input: ciphertext
@@ -214,13 +214,13 @@ module.exports = function ({
 
     if (!mac.equals(computedMAC)) return false
 
-    const clientWrappedKey = xor(ciphertext, responseEncryptionKey)
+    const clientWrappedEncryptionKey = xor(ciphertext, responseEncryptionKey)
 
-    const clientKey = deriveKeyHelper(
-      clientStretchedPassword, clientKeyParameters
+    const clientWrappingKey = deriveKeyHelper(
+      clientStretchedPassword, clientWrappingKeyParameters
     )
 
-    const encryptionKey = xor(clientWrappedKey, clientKey)
+    const encryptionKey = xor(clientWrappedEncryptionKey, clientWrappingKey)
 
     return { encryptionKey }
   }

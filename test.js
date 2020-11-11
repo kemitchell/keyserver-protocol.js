@@ -43,12 +43,12 @@ const protocol = require('./')({
     context: Buffer.from('verifHsh')
   },
 
-  serverKey: {
+  serverWrappingKey: {
     subkey: 3,
     context: Buffer.from('serverKy')
   },
 
-  clientKey: {
+  clientWrappingKey: {
     subkey: 4,
     context: Buffer.from('clientKy')
   },
@@ -137,8 +137,8 @@ assert(has(serverRegister, 'authenticationSalt'))
 assert(serverRegister.authenticationSalt.length === 16)
 assert(has(serverRegister, 'serverStretchedPassword'))
 assert(serverRegister.serverStretchedPassword.length === 32)
-assert(has(serverRegister, 'serverWrappedKey'))
-assert(serverRegister.serverWrappedKey.length === 32)
+assert(has(serverRegister, 'serverWrappedEncryptionKey'))
+assert(serverRegister.serverWrappedEncryptionKey.length === 32)
 assert(has(serverRegister, 'userID'))
 assert(serverRegister.userID.length === 32)
 assert(has(serverRegister, 'verificationHash'))
@@ -168,7 +168,7 @@ const keyAccessToken = random(32)
 
 const serverRequest = protocol.server.request({
   serverStretchedPassword: serverRegister.serverStretchedPassword,
-  serverWrappedKey: serverRegister.serverWrappedKey,
+  serverWrappedEncryptionKey: serverRegister.serverWrappedEncryptionKey,
   keyAccessToken
 })
 
