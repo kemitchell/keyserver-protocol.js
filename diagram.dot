@@ -18,6 +18,7 @@ digraph {
   random -> serverWrappedEncryptionKey;
   serverWrappedEncryptionKey[label="server\nwrapped\nencryption\nkey"];
   random -> userID;
+  userID[label="user ID"];
 
   serverStretchedPassword -> serverWrappingKey;
   serverWrappingKey[label="server\nwrapping\nkey"];
