@@ -51,5 +51,5 @@ digraph {
   clientWrappingKeyXOR[label="XOR",shape=rect];
 
   serverDatabase[shape=cylinder,label="server\ndatabase"];
-  {authSalt, email, userID, serverWrappedEncryptionKey, verificationHash} -> serverDatabase;
+  {authenticationSalt, email, userID, serverWrappedEncryptionKey, verificationHash} -> serverDatabase;
 }
