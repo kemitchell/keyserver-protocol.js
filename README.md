@@ -7,3 +7,5 @@ A few differences:
 - independent derivation of each subkey
 
 See [`test.js`](./test.js) for an example of use with [sodium-native](https://www.npmjs.com/package/sodium-native) primitives.
+
+![diagram](./diagram.svg)

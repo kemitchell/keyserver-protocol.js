@@ -1,0 +1,34 @@
+digraph {
+  {password, email} -> clientStretch -> clientStretchedPassword;
+  clientStretch[shape=rect];
+  clientStretchedPassword -> authenticationToken;
+
+  random -> authenticationSalt;
+  random[shape=rect];
+  {authenticationToken, authenticationSalt} -> serverStretch -> serverStretchedPassword;
+  serverStretch[shape=rect];
+  serverStretchedPassword -> verificationHash;
+  random -> serverWrappedEncryptionKey;
+  random -> userID;
+
+  serverStretchedPassword -> serverWrappingKey;
+  {serverWrappingKey, serverWrappedEncryptionKey} -> serverWrappingKeyXOR -> clientWrappedEncryptionKey;
+  serverWrappingKeyXOR[label="XOR",shape=rect];
+  random -> keyAccessToken;
+  keyAccessToken -> tokenID;
+  keyAccessToken -> keyRequestToken;
+  keyAccessToken -> requestAuthenticationKey;
+  keyRequestToken -> responseEncryptionKey;
+  {clientWrappedEncryptionKey, responseEncryptionKey} -> serverEncryptionXOR -> ciphertext;
+  serverEncryptionXOR[label="XOR",shape=rect];
+  keyRequestToken -> responseAuthenticationKey;
+  {responseAuthenticationKey, ciphertext} -> authenticate -> mac;
+  authenticate[shape=rect];
+
+  {ciphertext, responseEncryptionKey} -> clientEncryptionXOR -> clientWrappedEncryptionKey;
+  clientEncryptionXOR[shape=rect,label="XOR"];
+  clientStretchedPassword -> clientWrappingKey;
+  {clientWrappedEncryptionKey, clientWrappingKey} -> clientWrappingKeyXOR -> encryptionKey;
+  encryptionKey[shape=doubleoctagon,height=1,width=1];
+  clientWrappingKeyXOR[label="XOR",shape=rect];
+}
