@@ -5,9 +5,7 @@ const sodium = require('sodium-native')
 // Configure a protocol implementation with primitives
 // from sodium-native.
 const protocol = require('./')({
-  clientStretch: function (options) {
-    const password = options.password
-    const salt = options.salt
+  clientStretch: function ({ password, salt }) {
     const returned = Buffer.alloc(32)
     sodium.crypto_pwhash(
       returned, password, salt,
@@ -20,9 +18,7 @@ const protocol = require('./')({
 
   serverStretchSaltLength: sodium.crypto_pwhash_SALTBYTES,
 
-  serverStretch: function (options) {
-    const password = options.password
-    const salt = options.salt
+  serverStretch: function ({ password, salt }) {
     const returned = Buffer.alloc(32)
     sodium.crypto_pwhash(
       returned, password, salt,
@@ -78,11 +74,8 @@ const protocol = require('./')({
     context: Buffer.from('token-ID')
   },
 
-  deriveKey: function (options) {
-    const key = options.key
-    const subkey = options.subkey
-    const context = options.context
-    const returned = Buffer.alloc(options.length || 32)
+  deriveKey: function ({ key, subkey, context, length }) {
+    const returned = Buffer.alloc(length || 32)
     assert(returned.length >= sodium.crypto_kdf_BYTES_MIN)
     assert(returned.length <= sodium.crypto_kdf_BYTES_MAX)
     assert(context.length === sodium.crypto_kdf_CONTEXTBYTES)
@@ -93,9 +86,7 @@ const protocol = require('./')({
     return returned
   },
 
-  authenticate: function (options) {
-    const key = options.key
-    const input = options.input
+  authenticate: function ({ key, input }) {
     const returned = Buffer.alloc(sodium.crypto_auth_BYTES)
     sodium.crypto_auth(returned, input, key)
     return returned
