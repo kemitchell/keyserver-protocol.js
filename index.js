@@ -1,59 +1,59 @@
-var assert = require('assert')
+const assert = require('assert')
 
 module.exports = function (configuration) {
   assert(typeof configuration === 'object')
 
   // Cryptographic Primitives
 
-  var clientStretch = configuration.clientStretch
+  const clientStretch = configuration.clientStretch
   assert(typeof clientStretch === 'function')
 
-  var serverStretch = configuration.serverStretch
+  const serverStretch = configuration.serverStretch
   assert(typeof serverStretch === 'function')
 
-  var serverStretchSaltLength = configuration.serverStretchSaltLength
+  const serverStretchSaltLength = configuration.serverStretchSaltLength
   assert(Number.isInteger(serverStretchSaltLength))
   assert(serverStretchSaltLength > 0)
 
-  var deriveKey = configuration.deriveKey
+  const deriveKey = configuration.deriveKey
   assert(typeof deriveKey === 'function')
 
-  var authenticate = configuration.authenticate
+  const authenticate = configuration.authenticate
   assert(typeof authenticate === 'function')
 
-  var random = configuration.random
+  const random = configuration.random
   assert(typeof random === 'function')
 
-  var generateUserID = configuration.generateUserID
+  const generateUserID = configuration.generateUserID
   assert(typeof generateUserID === 'function')
 
   // Key Derivation Parameters
 
-  var verificationHashParameters = configuration.verificationHash
+  const verificationHashParameters = configuration.verificationHash
   assert(typeof verificationHashParameters === 'object')
 
-  var authenticationTokenParameters = configuration.authenticationToken
+  const authenticationTokenParameters = configuration.authenticationToken
   assert(typeof authenticationTokenParameters === 'object')
 
-  var clientKeyParameters = configuration.clientKey
+  const clientKeyParameters = configuration.clientKey
   assert(typeof clientKeyParameters === 'object')
 
-  var serverKeyParameters = configuration.serverKey
+  const serverKeyParameters = configuration.serverKey
   assert(typeof serverKeyParameters === 'object')
 
-  var responseAuthenticationKeyParameters = configuration.responseAuthenticationKey
+  const responseAuthenticationKeyParameters = configuration.responseAuthenticationKey
   assert(typeof responseAuthenticationKeyParameters === 'object')
 
-  var responseEncryptionKeyParameters = configuration.responseEncryptionKey
+  const responseEncryptionKeyParameters = configuration.responseEncryptionKey
   assert(typeof responseEncryptionKeyParameters === 'object')
 
-  var requestAuthenticationKeyParameters = configuration.requestAuthenticationKey
+  const requestAuthenticationKeyParameters = configuration.requestAuthenticationKey
   assert(typeof requestAuthenticationKeyParameters === 'object')
 
-  var keyRequestTokenParameters = configuration.keyRequestToken
+  const keyRequestTokenParameters = configuration.keyRequestToken
   assert(typeof keyRequestTokenParameters === 'object')
 
-  var tokenIDParameters = configuration.tokenID
+  const tokenIDParameters = configuration.tokenID
   assert(typeof tokenIDParameters === 'object')
 
   // API
@@ -73,22 +73,22 @@ module.exports = function (configuration) {
   function clientLogin (input) {
     assert(typeof input === 'object')
 
-    var password = input.password
+    const password = input.password
     assert(typeof password === 'string')
     assert(password.length > 0)
-    var passwordBuffer = Buffer.from(password, 'utf8')
+    const passwordBuffer = Buffer.from(password, 'utf8')
 
-    var email = input.email
+    const email = input.email
     assert(typeof email === 'string')
     assert(email.length > 0)
     assert(email.indexOf('@') > 1)
-    var emailBuffer = Buffer.from(email, 'utf8')
+    const emailBuffer = Buffer.from(email, 'utf8')
 
-    var clientStretchedPassword = clientStretch({
+    const clientStretchedPassword = clientStretch({
       password: passwordBuffer,
       salt: emailBuffer
     })
-    var authenticationToken = deriveKeyHelper(
+    const authenticationToken = deriveKeyHelper(
       clientStretchedPassword, authenticationTokenParameters
     )
 
@@ -101,24 +101,24 @@ module.exports = function (configuration) {
   function serverRegister (input) {
     assert(typeof input === 'object')
 
-    var clientStretchedPassword = input.clientStretchedPassword
+    const clientStretchedPassword = input.clientStretchedPassword
     assert(Buffer.isBuffer(clientStretchedPassword))
     assert(clientStretchedPassword.byteLength > 0)
 
-    var authenticationToken = input.authenticationToken
+    const authenticationToken = input.authenticationToken
     assert(Buffer.isBuffer(authenticationToken))
     assert(authenticationToken.byteLength > 0)
 
-    var authenticationSalt = random(serverStretchSaltLength)
-    var serverStretchedPassword = serverStretch({
+    const authenticationSalt = random(serverStretchSaltLength)
+    const serverStretchedPassword = serverStretch({
       password: authenticationToken,
       salt: authenticationSalt
     })
-    var verificationHash = deriveKeyHelper(
+    const verificationHash = deriveKeyHelper(
       serverStretchedPassword, verificationHashParameters
     )
-    var serverWrappedKey = random(32)
-    var userID = generateUserID()
+    const serverWrappedKey = random(32)
+    const userID = generateUserID()
 
     return {
       authenticationSalt,
@@ -132,24 +132,24 @@ module.exports = function (configuration) {
   function serverLogin (input) {
     assert(typeof input === 'object')
 
-    var authenticationToken = input.authenticationToken
+    const authenticationToken = input.authenticationToken
     assert(Buffer.isBuffer(authenticationToken))
     assert(authenticationToken.byteLength > 0)
 
-    var authenticationSalt = input.authenticationSalt
+    const authenticationSalt = input.authenticationSalt
     assert(Buffer.isBuffer(authenticationSalt))
     assert(authenticationSalt.byteLength > 0)
 
-    var storedVerificationHash = input.verificationHash
+    const storedVerificationHash = input.verificationHash
     assert(Buffer.isBuffer(storedVerificationHash))
     assert(storedVerificationHash.byteLength > 0)
 
-    var serverStretchedPassword = serverStretch({
+    const serverStretchedPassword = serverStretch({
       password: authenticationToken,
       salt: authenticationSalt
     })
 
-    var computedVerificationHash = deriveKeyHelper(
+    const computedVerificationHash = deriveKeyHelper(
       serverStretchedPassword, verificationHashParameters
     )
 
@@ -159,44 +159,44 @@ module.exports = function (configuration) {
   function serverRequest (input) {
     assert(typeof input === 'object')
 
-    var serverStretchedPassword = input.serverStretchedPassword
+    const serverStretchedPassword = input.serverStretchedPassword
     assert(Buffer.isBuffer(serverStretchedPassword))
     assert(serverStretchedPassword.byteLength > 0)
 
-    var serverWrappedKey = input.serverWrappedKey
+    const serverWrappedKey = input.serverWrappedKey
     assert(Buffer.isBuffer(serverWrappedKey))
     assert(serverWrappedKey.byteLength > 0)
 
-    var keyAccessToken = input.keyAccessToken
+    const keyAccessToken = input.keyAccessToken
     assert(Buffer.isBuffer(keyAccessToken))
     assert(keyAccessToken.byteLength > 0)
 
-    var parameters = { key: serverStretchedPassword }
+    const parameters = { key: serverStretchedPassword }
     Object.assign(parameters, serverKeyParameters)
-    var serverKey = deriveKeyHelper(
+    const serverKey = deriveKeyHelper(
       serverStretchedPassword, serverKeyParameters
     )
-    var clientWrappedKey = xor(serverKey, serverWrappedKey)
+    const clientWrappedKey = xor(serverKey, serverWrappedKey)
 
-    var tokenID = deriveKeyHelper(
+    const tokenID = deriveKeyHelper(
       keyAccessToken, tokenIDParameters
     )
-    var requestAuthenticationKey = deriveKeyHelper(
+    const requestAuthenticationKey = deriveKeyHelper(
       keyAccessToken, requestAuthenticationKeyParameters
     )
-    var keyRequestToken = deriveKeyHelper(
+    const keyRequestToken = deriveKeyHelper(
       keyAccessToken, keyRequestTokenParameters
     )
 
-    var responseEncryptionKey = deriveKeyHelper(
+    const responseEncryptionKey = deriveKeyHelper(
       keyRequestToken, responseEncryptionKeyParameters
     )
-    var responseAuthenticationKey = deriveKeyHelper(
+    const responseAuthenticationKey = deriveKeyHelper(
       keyRequestToken, responseAuthenticationKeyParameters
     )
 
-    var ciphertext = xor(clientWrappedKey, responseEncryptionKey)
-    var mac = authenticate({
+    const ciphertext = xor(clientWrappedKey, responseEncryptionKey)
+    const mac = authenticate({
       key: responseAuthenticationKey,
       input: ciphertext
     })
@@ -212,43 +212,43 @@ module.exports = function (configuration) {
   function clientRequest (input) {
     assert(typeof input === 'object')
 
-    var ciphertext = input.ciphertext
+    const ciphertext = input.ciphertext
     assert(Buffer.isBuffer(ciphertext))
 
-    var providedMAC = input.mac
+    const providedMAC = input.mac
     assert(Buffer.isBuffer(providedMAC))
 
-    var clientStretchedPassword = input.clientStretchedPassword
+    const clientStretchedPassword = input.clientStretchedPassword
     assert(Buffer.isBuffer(clientStretchedPassword))
 
-    var keyAccessToken = input.keyAccessToken
+    const keyAccessToken = input.keyAccessToken
     assert(Buffer.isBuffer(keyAccessToken))
 
-    var keyRequestToken = deriveKeyHelper(
+    const keyRequestToken = deriveKeyHelper(
       keyAccessToken, keyRequestTokenParameters
     )
 
-    var responseAuthenticationKey = deriveKeyHelper(
+    const responseAuthenticationKey = deriveKeyHelper(
       keyRequestToken, responseAuthenticationKeyParameters
     )
-    var responseEncryptionKey = deriveKeyHelper(
+    const responseEncryptionKey = deriveKeyHelper(
       keyRequestToken, responseEncryptionKeyParameters
     )
 
-    var computedMAC = authenticate({
+    const computedMAC = authenticate({
       key: responseAuthenticationKey,
       input: ciphertext
     })
 
     if (!providedMAC.equals(computedMAC)) return false
 
-    var clientWrappedKey = xor(ciphertext, responseEncryptionKey)
+    const clientWrappedKey = xor(ciphertext, responseEncryptionKey)
 
-    var clientKey = deriveKeyHelper(
+    const clientKey = deriveKeyHelper(
       clientStretchedPassword, clientKeyParameters
     )
 
-    var encryptionKey = xor(clientWrappedKey, clientKey)
+    const encryptionKey = xor(clientWrappedKey, clientKey)
 
     return { encryptionKey }
   }
@@ -262,8 +262,8 @@ module.exports = function (configuration) {
 
 function xor (a, b) {
   assert(a.length === b.length)
-  var returned = Buffer.alloc(a.length)
-  for (var offset = 0; offset < a.length; offset++) {
+  const returned = Buffer.alloc(a.length)
+  for (let offset = 0; offset < a.length; offset++) {
     returned[offset] = a[offset] ^ b[offset]
   }
   return returned
