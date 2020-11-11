@@ -31,4 +31,7 @@ digraph {
   {clientWrappedEncryptionKey, clientWrappingKey} -> clientWrappingKeyXOR -> encryptionKey;
   encryptionKey[shape=doubleoctagon,height=1,width=1];
   clientWrappingKeyXOR[label="XOR",shape=rect];
+
+  serverDatabase[shape=cylinder];
+  {authSalt, email, userID, serverWrappedEncryptionKey, verificationHash} -> serverDatabase;
 }
