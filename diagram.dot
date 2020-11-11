@@ -38,7 +38,7 @@ digraph {
   serverEncryptionXOR[label="XOR",shape=rect];
   keyRequestToken -> responseAuthenticationKey;
   responseAuthenticationKey[label="response\nauthentication\nkey"];
-  {responseAuthenticationKey, ciphertext} -> authenticate -> mac;
+  {responseAuthenticationKey, ciphertext} -> authenticate -> MAC;
   authenticate[shape=rect];
 
   {ciphertext, responseEncryptionKey} -> clientEncryptionXOR -> clientWrappedEncryptionKey;
